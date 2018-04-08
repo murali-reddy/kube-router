@@ -64,9 +64,72 @@ default via 172.20.32.1 dev eth0
 
 ## packet flow across the nodes in same subent/L2 network
 
+```
+root@ip-172-20-42-25:/home/admin# ip route
+default via 172.20.32.1 dev eth0
+100.96.0.0/24 via 172.20.49.17 dev eth0  proto 17
+100.96.1.0/24 dev tun-172207591  proto 17
+100.96.2.0/24 dev kube-bridge  proto kernel  scope link  src 100.96.2.1
+100.96.3.0/24 dev tun-1722067180  proto 17
+100.96.4.0/24 via 172.20.32.100 dev eth0  proto 17
+172.17.0.0/16 dev docker0  proto kernel  scope link  src 172.17.0.1
+172.20.32.0/19 dev eth0  proto kernel  scope link  src 172.20.42.25
+```
+
+```
+root@ip-172-20-32-100:/home/admin# ip route
+default via 172.20.32.1 dev eth0
+100.96.0.0/24 via 172.20.49.17 dev eth0  proto 17
+100.96.1.0/24 dev tun-172207591  proto 17
+100.96.2.0/24 via 172.20.42.25 dev eth0  proto 17
+100.96.3.0/24 dev tun-1722067180  proto 17
+100.96.4.0/24 dev kube-bridge  proto kernel  scope link  src 100.96.4.1
+172.17.0.0/16 dev docker0  proto kernel  scope link  src 172.17.0.1
+172.20.32.0/19 dev eth0  proto kernel  scope link  src 172.20.32.100
+root@ip-172-20-32-100:/home/admin#
+```
+
+## packet flow across the nodes in different subent/L2 network with IP-IP overlay
+
+```
+root@ip-172-20-42-25:/home/admin# ip route
+default via 172.20.32.1 dev eth0
+100.96.0.0/24 via 172.20.49.17 dev eth0  proto 17
+100.96.1.0/24 dev tun-172207591  proto 17
+100.96.2.0/24 dev kube-bridge  proto kernel  scope link  src 100.96.2.1
+100.96.3.0/24 dev tun-1722067180  proto 17
+100.96.4.0/24 via 172.20.32.100 dev eth0  proto 17
+172.17.0.0/16 dev docker0  proto kernel  scope link  src 172.17.0.1
+172.20.32.0/19 dev eth0  proto kernel  scope link  src 172.20.42.25
+```
+
+```
+root@ip-172-20-42-25:/home/admin# ip link show tun-1722067180
+9: tun-1722067180@eth0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 8961 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1
+    link/ipip 172.20.42.25 peer 172.20.67.180   
+```
+
+```
+root@ip-172-20-67-180:/home/admin# ip route
+default via 172.20.64.1 dev eth0
+100.96.0.0/24 dev tun-172204917  proto 17
+100.96.1.0/24 via 172.20.75.91 dev eth0  proto 17
+100.96.2.0/24 dev tun-172204225  proto 17
+100.96.3.0/24 dev kube-bridge  proto kernel  scope link  src 100.96.3.1
+100.96.4.0/24 dev tun-1722032100  proto 17
+172.17.0.0/16 dev docker0  proto kernel  scope link  src 172.17.0.1
+172.20.64.0/19 dev eth0  proto kernel  scope link  src 172.20.67.180
+root@ip-172-20-67-180:/home/admin#          
+```
+```
+root@ip-172-20-67-180:/home/admin# ip link show tun-172204225
+9: tun-172204225@eth0: <POINTOPOINT,NOARP,UP,LOWER_UP> mtu 8961 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1
+    link/ipip 172.20.67.180 peer 172.20.42.25
+```
+
+## packet flow across the nodes in different subent/L2 network with routing
 
 
-## packet flow across the nodes in different subent/L2 network
 ```
 ) k get svc -o wide --all-namespaces
 NAMESPACE     NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)         AGE       SELECTOR
