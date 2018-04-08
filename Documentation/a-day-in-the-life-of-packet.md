@@ -16,13 +16,12 @@ Lets revist the fundamnetal requirements expected by [Kubernetes network model](
 ![Topology](./img/kube-router-network-toplogy.png)
 
 
-``` bash
+``` cmd
 ± kubectl get nodes -ao jsonpath='{range .items[*]}{@.status.addresses[?(@.type=="InternalIP")].address}{"     "}{@.spec.podCIDR}{"\n"}{end}' | column -t -s' '
-172.20.34.114  100.96.1.0/24
-172.20.47.166  100.96.4.0/24
-172.20.51.141  100.96.0.0/24
-172.20.74.132  100.96.3.0/24
-172.20.91.78   100.96.2.0/24
+172.20.75.91   100.96.1.0/24
+172.20.42.25   100.96.2.0/24
+172.20.67.180  100.96.3.0/24
+172.20.32.100  100.96.4.0/24
 ```
 
 
