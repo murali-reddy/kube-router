@@ -5,13 +5,15 @@ This document describes the packet flow in the Kubernetes cluster for various sc
 
 ## Kubernetes network model
 
-Lets revist the fundamnetal requirements expected by [Kubernetes network model](https://kubernetes.io/docs/concepts/cluster-administration/networking/#kubernetes-model).
+Lets revisit the fundamnetal requirements expected by [Kubernetes network model](https://kubernetes.io/docs/concepts/cluster-administration/networking/#kubernetes-model).
 
 * all containers can communicate with all other containers without NAT
 * all nodes can communicate with all containers (and vice-versa) without NAT
 * the IP that a container sees itself as is the same IP that others see it as 
 
 ## An e.g. network topolgy
+
+We will use below 4 node cluster as example to walkthrough how packet flows in various scenarios. Nodes `ip-172-20-42-25`, `ip-172-20-32-100` with IP's `172.20.42.25`, `172.20.32.100` respectivley are in same L2 network with subnet `172.20.32.0/19`. Nodes `ip-172-20-67-180`, `ip-172-20-75-91` with IP's `172.20.67.180`, `172.20.75.91` respectivley are in same L2 network with subnet `172.20.64.0/19`. Routers acting as gateway for the networks `172.20.32.0/19` and `172.20.64.0/19`are interconnectd by L3 fabric.
 
 ![Topology](./img/kube-router-network-toplogy.png)
 
