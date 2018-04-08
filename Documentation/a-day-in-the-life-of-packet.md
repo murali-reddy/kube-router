@@ -13,10 +13,11 @@ Lets revisit the fundamnetal requirements expected by [Kubernetes network model]
 
 ## An e.g. network topolgy
 
-We will use below 4 node cluster as example to walkthrough how packet flows in various scenarios. Nodes `ip-172-20-42-25`, `ip-172-20-32-100` with IP's `172.20.42.25`, `172.20.32.100` respectivley are in same L2 network with subnet `172.20.32.0/19`. Nodes `ip-172-20-67-180`, `ip-172-20-75-91` with IP's `172.20.67.180`, `172.20.75.91` respectivley are in same L2 network with subnet `172.20.64.0/19`. Routers acting as gateway for the networks `172.20.32.0/19` and `172.20.64.0/19`are interconnectd by L3 fabric.
+We will use below 4 node cluster as example to walkthrough how packet flows in various scenarios. Nodes `ip-172-20-42-25`, `ip-172-20-32-100` with IP's `172.20.42.25`, `172.20.32.100` respectivley are in same L2 network with subnet `172.20.32.0/19`. Nodes `ip-172-20-67-180`, `ip-172-20-75-91` with IP's `172.20.67.180`, `172.20.75.91` respectivley are in same L2 network with subnet `172.20.64.0/19`. Routers acting as gateway for the networks `172.20.32.0/19` and `172.20.64.0/19`are interconnectd by L3 fabric. Note: L3 fabric in reality (from what is depecited in the diagram) could be complex topology
 
 ![Topology](./img/kube-router-network-toplogy.png)
 
+Kube-router does not perform explict IPAM, like other CNI solutions. Kube-router relies on `kube-controller-manager` to allocate pod CIDR's for each node. Below are the pod CIDR's allocated for the nodes in the cluster from cluster-cidr range of `100.96.0.0/16`.
 
 ``` cmd
 ± kubectl get nodes -ao jsonpath='{range .items[*]}{@.status.addresses[?(@.type=="InternalIP")].address}{"     "}{@.spec.podCIDR}{"\n"}{end}' | column -t -s' '
