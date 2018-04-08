@@ -27,10 +27,46 @@ Kube-router does not perform explict IPAM, like other CNI solutions. Kube-router
 172.20.32.100  100.96.4.0/24
 ```
 
+## packet flow with in the node
+
+```
+± k exec -it frontend-67f65745c-pvq8k bash
+root@frontend-67f65745c-pvq8k:/var/www/html# ip route
+default via 100.96.2.1 dev eth0
+100.96.2.0/24 dev eth0  proto kernel  scope link  src 100.96.2.4
+```
+
+```
+root@ip-172-20-42-25:/home/admin# ifconfig  kube-bridge
+kube-bridge Link encap:Ethernet  HWaddr 0a:58:64:60:02:01
+          inet addr:100.96.2.1  Bcast:0.0.0.0  Mask:255.255.255.0
+          inet6 addr: fe80::6047:deff:fe2c:41b1/64 Scope:Link
+          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1
+          RX packets:5694 errors:0 dropped:0 overruns:0 frame:0
+          TX packets:5723 errors:0 dropped:0 overruns:0 carrier:0
+          collisions:0 txqueuelen:1000
+```
+
+```
+root@ip-172-20-42-25:/home/admin# ip route
+default via 172.20.32.1 dev eth0
+100.96.0.0/24 via 172.20.49.17 dev eth0  proto 17
+100.96.1.0/24 dev tun-172207591  proto 17
+100.96.2.0/24 dev kube-bridge  proto kernel  scope link  src 100.96.2.1
+100.96.3.0/24 dev tun-1722067180  proto 17
+100.96.4.0/24 via 172.20.32.100 dev eth0  proto 17
+172.17.0.0/16 dev docker0  proto kernel  scope link  src 172.17.0.1
+172.20.32.0/19 dev eth0  proto kernel  scope link  src 172.20.42.25
+```
 
 ![bridge](./img/kube-router-1-bridge.png)
 
 
+## packet flow across the nodes in same subent/L2 network
+
+
+
+## packet flow across the nodes in different subent/L2 network
 ```
 ) k get svc -o wide --all-namespaces
 NAMESPACE     NAME           TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)         AGE       SELECTOR
