@@ -54,7 +54,8 @@ const (
 )
 
 var (
-	h *ipvs.Handle
+	h      *ipvs.Handle
+	NodeIP net.IP
 )
 
 type ipvsCalls interface {
@@ -109,6 +110,21 @@ func (ln *linuxNetworking) ipAddrAdd(iface netlink.Link, ip string) error {
 		glog.Errorf("Failed to assign cluster ip %s to dummy interface: %s",
 			naddr.IPNet.IP.String(), err.Error())
 		return err
+	}
+	route, err := netlink.RouteGet(net.ParseIP(ip))
+	if err != nil {
+		glog.Errorf("Failed to replace route to service VIP %s configured on kube-dummy-if. Error: %v", ip, err)
+	}
+	replaceRoute := netlink.Route{
+		LinkIndex: route[0].LinkIndex,
+		Scope:     route[0].Scope,
+		Dst:       route[0].Dst,
+		Src:       NodeIP,
+		Table:     route[0].Table,
+	}
+	err = netlink.RouteReplace(&replaceRoute)
+	if err != nil {
+		glog.Errorf("Failed to replace route to service VIP %s configured on kube-dummy-if. Error: %v", ip, err)
 	}
 	return nil
 }
@@ -1825,11 +1841,11 @@ func NewNetworkServicesController(clientset kubernetes.Interface,
 	}
 
 	nsc.nodeHostName = node.Name
-	nodeIP, err := utils.GetNodeIP(node)
+	NodeIP, err = utils.GetNodeIP(node)
 	if err != nil {
 		return nil, err
 	}
-	nsc.nodeIP = nodeIP
+	nsc.nodeIP = NodeIP
 
 	nsc.podLister = podInformer.GetIndexer()
 
