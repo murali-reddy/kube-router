@@ -13,6 +13,7 @@ type KubeRouterConfig struct {
 	AdvertiseNodePodCidr    bool
 	AdvertiseLoadBalancerIp bool
 	BGPGracefulRestart      bool
+	BGPListenAllIP          bool
 	CleanupConfig           bool
 	ClusterAsn              uint
 	ClusterCIDR             string
@@ -68,6 +69,8 @@ func (s *KubeRouterConfig) AddFlags(fs *pflag.FlagSet) {
 		"Enables Network Policy -- sets up iptables to provide ingress firewall for pods.")
 	fs.BoolVar(&s.RunRouter, "run-router", true,
 		"Enables Pod Networking -- Advertises and learns the routes to Pods via iBGP.")
+	fs.BoolVar(&s.BGPListenAllIP, "bgp-listen-all-ip", false,
+		"Enable BGP server to listen on all IP address.")
 	fs.StringVar(&s.Master, "master", s.Master,
 		"The address of the Kubernetes API server (overrides any value in kubeconfig).")
 	fs.StringVar(&s.Kubeconfig, "kubeconfig", s.Kubeconfig,
