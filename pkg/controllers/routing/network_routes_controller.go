@@ -361,7 +361,9 @@ func (nrc *NetworkRoutingController) injectRoute(path *table.Path) error {
 	var route *netlink.Route
 
 	// check if the neighbour is in same subnet
-	if !nrc.nodeSubnet.Contains(nexthop) {
+	//if !nrc.nodeSubnet.Contains(nexthop) {
+	if false {
+
 		tunnelName := generateTunnelName(nexthop.String())
 		glog.Infof("Found node: " + nexthop.String() + " to be in different subnet.")
 

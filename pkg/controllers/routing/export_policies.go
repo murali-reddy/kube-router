@@ -96,6 +96,10 @@ func (nrc *NetworkRoutingController) addExportPolicies() error {
 		if err != nil {
 			nrc.bgpServer.AddDefinedSet(iBGPPeerNS)
 		}
+		actions := config.Actions{
+			RouteDisposition: config.ROUTE_DISPOSITION_ACCEPT_ROUTE,
+		}
+		actions.BgpActions.SetNextHop = "self"
 		// statement to represent the export policy to permit advertising node's pod CIDR
 		statements = append(statements,
 			config.Statement{
@@ -107,9 +111,7 @@ func (nrc *NetworkRoutingController) addExportPolicies() error {
 						NeighborSet: "iBGPpeerset",
 					},
 				},
-				Actions: config.Actions{
-					RouteDisposition: config.ROUTE_DISPOSITION_ACCEPT_ROUTE,
-				},
+				Actions: actions,
 			})
 	}
 
@@ -133,6 +135,10 @@ func (nrc *NetworkRoutingController) addExportPolicies() error {
 		if err != nil {
 			nrc.bgpServer.AddDefinedSet(ns)
 		}
+		actions := config.Actions{
+			RouteDisposition: config.ROUTE_DISPOSITION_ACCEPT_ROUTE,
+		}
+		bgpActions.SetNextHop = "self"
 		// statement to represent the export policy to permit advertising cluster IP's
 		// only to the global BGP peer or node specific BGP peer
 		statements = append(statements, config.Statement{
@@ -159,9 +165,7 @@ func (nrc *NetworkRoutingController) addExportPolicies() error {
 						NeighborSet: "externalpeerset",
 					},
 				},
-				Actions: config.Actions{
-					RouteDisposition: config.ROUTE_DISPOSITION_ACCEPT_ROUTE,
-				},
+				Actions: actions,
 			})
 		}
 	}
