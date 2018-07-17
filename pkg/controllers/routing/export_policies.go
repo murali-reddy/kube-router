@@ -138,6 +138,7 @@ func (nrc *NetworkRoutingController) addExportPolicies() error {
 		actions := config.Actions{
 			RouteDisposition: config.ROUTE_DISPOSITION_ACCEPT_ROUTE,
 		}
+		actions.BgpActions.SetNextHop = "self"
 		bgpActions.SetNextHop = "self"
 		// statement to represent the export policy to permit advertising cluster IP's
 		// only to the global BGP peer or node specific BGP peer
