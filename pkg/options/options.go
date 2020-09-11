@@ -122,7 +122,7 @@ func (s *KubeRouterConfig) AddFlags(fs *pflag.FlagSet) {
 			"When set to false no tunneling is used and routing infrastructure is expected to route traffic for pod-to-pod networking across nodes in different subnets")
 	fs.BoolVar(&s.EnablePodEgress, "enable-pod-egress", true,
 		"SNAT traffic from Pods to destinations outside the cluster.")
-	fs.BoolVar(&s.EnablePprof, "enable-pprof", false,
+	fs.BoolVar(&s.EnablePprof, "enable-pprof", true,
 		"Enables pprof for debugging performance and memory leak issues.")
 	fs.StringSliceVar(&s.ExcludedCidrs, "excluded-cidrs", s.ExcludedCidrs,
 		"Excluded CIDRs are used to exclude IPVS rules from deletion.")

@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -8,6 +9,7 @@ import (
 	"runtime"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/cloudnativelabs/kube-router/pkg/controllers/netpol"
 	"github.com/cloudnativelabs/kube-router/pkg/controllers/proxy"
@@ -16,8 +18,6 @@ import (
 	"github.com/cloudnativelabs/kube-router/pkg/metrics"
 	"github.com/cloudnativelabs/kube-router/pkg/options"
 	"github.com/golang/glog"
-
-	"time"
 
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
@@ -149,11 +149,11 @@ func (kr *KubeRouter) Run() error {
 		if err != nil {
 			return errors.New("Failed to create network routing controller: " + err.Error())
 		}
-
-		nodeInformer.AddEventHandler(nrc.NodeEventHandler)
-		svcInformer.AddEventHandler(nrc.ServiceEventHandler)
-		epInformer.AddEventHandler(nrc.EndpointsEventHandler)
-
+		/*
+			nodeInformer.AddEventHandler(nrc.NodeEventHandler)
+			svcInformer.AddEventHandler(nrc.ServiceEventHandler)
+			epInformer.AddEventHandler(nrc.EndpointsEventHandler)
+		*/
 		wg.Add(1)
 		go nrc.Run(healthChan, stopCh, &wg)
 	}
@@ -164,10 +164,10 @@ func (kr *KubeRouter) Run() error {
 		if err != nil {
 			return errors.New("Failed to create network services controller: " + err.Error())
 		}
-
-		svcInformer.AddEventHandler(nsc.ServiceEventHandler)
-		epInformer.AddEventHandler(nsc.EndpointsEventHandler)
-
+		/*
+			svcInformer.AddEventHandler(nsc.ServiceEventHandler)
+			epInformer.AddEventHandler(nsc.EndpointsEventHandler)
+		*/
 		wg.Add(1)
 		go nsc.Run(healthChan, stopCh, &wg)
 
@@ -185,15 +185,64 @@ func (kr *KubeRouter) Run() error {
 		if err != nil {
 			return errors.New("Failed to create network policy controller: " + err.Error())
 		}
-
-		podInformer.AddEventHandler(npc.PodEventHandler)
-		nsInformer.AddEventHandler(npc.NamespaceEventHandler)
-		npInformer.AddEventHandler(npc.NetworkPolicyEventHandler)
-
+		/*
+			podInformer.AddEventHandler(npc.PodEventHandler)
+			nsInformer.AddEventHandler(npc.NamespaceEventHandler)
+			npInformer.AddEventHandler(npc.NetworkPolicyEventHandler)
+		*/
 		wg.Add(1)
 		go npc.Run(healthChan, stopCh, &wg)
 	}
 
+	wg.Add(1)
+	type Monitor struct {
+		Alloc,
+		TotalAlloc,
+		Sys,
+		Mallocs,
+		Frees,
+		LiveObjects,
+		PauseTotalNs uint64
+
+		NumGC        uint32
+		NumGoroutine int
+	}
+	go func() {
+		var m Monitor
+		var rtm runtime.MemStats
+		t := time.NewTicker(300 * time.Second)
+		for {
+			select {
+			case <-stopCh:
+				return
+			case <-t.C:
+				runtime.ReadMemStats(&rtm)
+				// Read full mem stats
+				runtime.ReadMemStats(&rtm)
+
+				// Number of goroutines
+				m.NumGoroutine = runtime.NumGoroutine()
+
+				// Misc memory stats
+				m.Alloc = rtm.Alloc
+				m.TotalAlloc = rtm.TotalAlloc
+				m.Sys = rtm.Sys
+				m.Mallocs = rtm.Mallocs
+				m.Frees = rtm.Frees
+
+				// Live objects = Mallocs - Frees
+				m.LiveObjects = m.Mallocs - m.Frees
+
+				// GC Stats
+				m.PauseTotalNs = rtm.PauseTotalNs
+				m.NumGC = rtm.NumGC
+
+				// Just encode to json and print
+				b, _ := json.Marshal(m)
+				glog.Infof("stats: " + string(b))
+			}
+		}
+	}()
 	// Handle SIGINT and SIGTERM
 	ch := make(chan os.Signal, 1)
 	signal.Notify(ch, syscall.SIGINT, syscall.SIGTERM)
