@@ -2,7 +2,7 @@ Kube-router provides an implementation of Kubernetes network policy specificatio
 
 This design document captures the current implementation of network policy specification using iptables.
 
-Design tenets and goals:
+# Design tenets and goals:
 
   - full compliance to Kubernetes v1 network policy specification
   - a CNI agnotstic implementation i.e.) no assumption on CNI used, so that its usable with any CNI
@@ -15,9 +15,9 @@ Design tenets and goals:
   - tolerant to out-of-band changes and reconcile desired state
   - fully stateless design, no bookkeeping data to represnet data any of sort. should scale to cluster of any size
 
-Implementation
+# Implementation
 
-* intercepting traffic
+## intercepting traffic
 
 iptables `fitler` table has three built in chains `INPUT`, `OUTPUT`, `FORWARD`. On a Linux host incoming traffic, outgoing traffic and forwarded traffic gets run through these chains respectivley.
 
